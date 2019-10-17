@@ -13,7 +13,7 @@ parser.add_argument('--width', type=int, default=320,
                     help='Preprocess input image by resizing to a specific width. It should be multiple by 32.')
 parser.add_argument('--height',type=int, default=320,
                     help='Preprocess input image by resizing to a specific height. It should be multiple by 32.')
-parser.add_argument('--thr',type=float, default=0.5,
+parser.add_argument('--thr',type=float, default=0.2,
                     help='Confidence threshold.')
 parser.add_argument('--nms',type=float, default=0.4,
                     help='Non-maximum suppression threshold.')
@@ -87,7 +87,7 @@ def main():
     net = cv.dnn.readNet(model)
 
     # Create a new named window
-    kWinName = "EAST: An Efficient and Accurate Scene Text Detector"
+    kWinName = "SmashBros Text Detection"
     cv.namedWindow(kWinName, cv.WINDOW_NORMAL)
     outNames = []
     outNames.append("feature_fusion/Conv_7/Sigmoid")
@@ -136,10 +136,10 @@ def main():
             for j in range(4):
                 p1 = (vertices[j][0], vertices[j][1])
                 p2 = (vertices[(j + 1) % 4][0], vertices[(j + 1) % 4][1])
-                cv.line(frame, p1, p2, (0, 255, 0), 1);
+                cv.line(frame, p1, p2, (0, 0, 255), 3);
 
         # Put efficiency information
-        cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+        cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0))
 
         # Display the frame
         cv.imshow(kWinName,frame)
