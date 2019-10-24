@@ -1,13 +1,14 @@
+#!/usr/bin/env python3
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import Label, Menu, Tk, PanedWindow
+import argparse
 
 class TextScrollCombo(ttk.Frame):
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-
     # ensure a consistent GUI size
         self.grid_propagate(False)
     # implement stretchability
@@ -24,9 +25,10 @@ class TextScrollCombo(ttk.Frame):
         self.txt['yscrollcommand'] = scrollb.set
 
 class interface:
-    def __init__(self, master):
+    def __init__(self, master, appWidth, appHeight):
         self.master = master
-        master.geometry("1000x614")
+        geo = "%dx%d" % (appWidth, appHeight)
+        master.geometry(geo)
         master.title("Smacket")
         self.videoPath = ""
 
@@ -37,7 +39,7 @@ class interface:
         topLeftTitle = tk.Message(master, text = "Timestamps")
         topLeftTitle.config(anchor = "center", aspect = 500, font = ("consolas", 20, "bold"), bg = bcg, relief = "sunken")
         timeStamps = TextScrollCombo(master)
-        timeStamps.config(width=200, height=260)
+        timeStamps.config(width=appWidth // 10, height= appHeight // 2)
         timeStamps.txt.config(font=("consolas", 12), undo=True, wrap='word', borderwidth=3, relief="sunken")
         topLeft.add(topLeftTitle)
         topLeft.add(timeStamps)
@@ -48,21 +50,21 @@ class interface:
         bottomLeftTitle = tk.Message(master, text = "Matches")
         bottomLeftTitle.config(anchor = "center", aspect = 500, font = ("consolas", 20, "bold"), bg = bcg, relief = "sunken")
         matches = TextScrollCombo(master)
-        matches.config(width=200, height=260)
+        matches.config(width= appWidth// 10 , height=appHeight // 2)
         matches.txt.config(font=("consolas", 12), undo=True, wrap='word', borderwidth=3, relief="sunken")
         bottomLeft.add(bottomLeftTitle)
         bottomLeft.add(matches)
 
         videoPlayer = Label(master, 
-                            height = 20, 
-                            width = 120,
+                            height = 20,
+                            width = appWidth - (appWidth // 10),
                             bg = 'red',
                             text = "VideoPlayer",)
         videoPlayer.grid(row=0, column=1)
 
         videoSkimmer = Label(master, 
-                            height = 20, 
-                            width = 120,
+                            height = 20,
+                            width = appWidth - (appWidth // 10),
                             bg = 'yellow',
                             text = "VideoSkimmer",)
         videoSkimmer.grid(row=1, column=1)
@@ -90,9 +92,20 @@ def importTimeline():
     for x in f1:
         print(x)
 
+def cli_args():
+    parser = argparse.ArgumentParser(description='Simple GUI to utilize the video trimmer')
+    parser.add_argument("--height", help="Desired height for application window")
+    parser.add_argument("--width", help="Desired width for application window")
+    parser.add_argument("--video", help="Optional preload video input")
+    parser.add_argument("--timeline", help="Optional preload timeline input")
+    args = parser.parse_args()
+    return args
+
+
 def main():
     root = Tk()
-    interface(root)
+    args = cli_args()
+    interface(root, int(args.width), int(args.height))
     createMenu(root)
     root.mainloop()
 
