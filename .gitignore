@@ -1,3 +1,14 @@
+
+#images too big
 Training/Stills
 Training/Clips
+
+#optimization 
 __pycache__/
+*.pyc
+
+#Training TFRrecords
+*.record
+
+
+
