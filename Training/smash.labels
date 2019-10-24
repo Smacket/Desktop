@@ -1,0 +1,49 @@
+item {
+  id: 1
+	name: 'Bowser_Profile'
+}
+
+item {
+  id: 2
+	name: 'Bowser_Character'
+}
+
+item {
+  id: 3
+	name: 'Chrom_Profile'
+}
+
+item {
+  id: 4
+	name: 'Chrom_Character'
+}
+
+item {
+  id: 5
+	name: 'BowserJr_Profile'
+}
+
+item {
+  id: 6
+	name: 'BowserJr_Character'
+}
+
+item {
+  id: 7
+	name: 'Cloud_Profile'
+}
+
+item {
+  id: 8
+	name: 'Cloud_Character'
+}
+
+item {
+  id: 9
+	name: 'Falcon_Profile'
+}
+
+item {
+  id: 10
+	name: 'Falcon_Character'
+}
