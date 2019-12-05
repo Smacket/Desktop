@@ -78,14 +78,28 @@ class Meta(QMainWindow):
         self.text_edit = Dashboard()
         self.setCentralWidget(self.text_edit)
 
-        openFile = QAction(QIcon("Open.png"), "Open", self)
+        import_action = QMenu("Import", self)
+        import_timeline = QAction("Timeline", self)
+        import_match = QAction("Match", self)
+        import_action.addAction(import_timeline)
+        import_action.addAction(import_match)
         menubar = self.menuBar()
         menu = menubar.addMenu('&File')
-        menu.addAction(openFile)
+        menu.addMenu(import_action)
 
+        import_timeline.triggered.connect(self.import_timeline_file)
+        import_match.triggered.connect(self.import_match_file)
 
         self.setGeometry(200,200,550,400)
         self.show()
+
+    def import_timeline_file(self):
+        timeline_name = QFileDialog.getOpenFileName(self, 'Import file', '/home')
+        print(timeline_name)
+
+    def import_match_file(self):
+        file_name = QFileDialog.getOpenFileName(self, 'Import file', '/home')
+        print(file_name)
 
         
 app = QApplication(sys.argv)
