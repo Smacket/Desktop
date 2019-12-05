@@ -6,6 +6,24 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 import sys
 
+class PB_Window(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+    
+    def initUI(self):
+        self.setGeometry(350,200,350,150)
+        self.setWindowTitle("Progress")
+        self.bar = QProgressBar(self)
+        self.bar.setMaximum(100)
+        bar_label = QLabel("In Progress...")
+        bar_grid = QGridLayout()
+        bar_grid.setSpacing(10)
+        bar_grid.addWidget(bar_label,0,5)
+        bar_grid.addWidget(self.bar,1,5,5,10)
+        self.setLayout(bar_grid)
+        self.show()
+
 class Dashboard(QWidget):
     def __init__(self):
         super().__init__()
@@ -27,6 +45,9 @@ class Dashboard(QWidget):
         mts_clear = QPushButton("Clear")
         mts_clear.clicked.connect(self.mts_clear)
 
+        export_btn = QPushButton("Export")
+        export_btn.clicked.connect(self.export)
+
         video_player = QLabel("Video Player")
         video_skimmer = QLabel("Video Skimmer")
 
@@ -45,6 +66,8 @@ class Dashboard(QWidget):
 
         grid.addWidget(video_player,0,3,5,5)
         grid.addWidget(video_skimmer,5,3,5,5)
+
+        grid.addWidget(export_btn,10,10)
 
         self.setLayout(grid)
 
@@ -67,6 +90,14 @@ class Dashboard(QWidget):
         confirm = QMessageBox.question(self, "Clear", "Clear this input?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             print("Do the actual clearing")
+    
+    def export(self):
+        directory = str(QFileDialog.getExistingDirectory(self, "Export Location"))
+        print(directory)
+        self.pb = PB_Window() #Comment this out if you don't want to deal with a progress bar.
+        #Do the exporting
+        self.pb.bar.setValue(100)
+        self.pb.hide()
     
 
 class Meta(QMainWindow):
