@@ -1,63 +1,42 @@
-#!/usr/bin/env python3
+#/usr/bin/env python3
 # from PyQt5 import QtCore
 # from PyQt5.QtWidgets import (QMainWindow, QTextEdit, 
-    # QAction, QFileDialog, QApplication, QWidget, QPushButton)
+# QAction, QFileDialog, QApplication, QWidget, QPushButton)
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QDir, Qt, QUrl, QSize
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtGui import QIcon, QFont
+from Splicer import splice
 import sys
-
-class PB_Window(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-    
-    def initUI(self):
-        self.setGeometry(350,200,350,150)
-        self.setWindowTitle("Progress")
-        self.bar = QProgressBar(self)
-        self.bar.setMaximum(100)
-        bar_label = QLabel("In Progress...")
-        bar_grid = QGridLayout()
-        bar_grid.setSpacing(10)
-        bar_grid.addWidget(bar_label,0,5)
-        bar_grid.addWidget(self.bar,1,5,5,10)
-        self.setLayout(bar_grid)
-        self.show()
-
 class Dashboard(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
-
+        self.timelineFile = ""
             
     def initUI(self):
         tst_label = QLabel("Timestamps")
-        self.tst_box = QTextEdit()
+        self.tst_box = QListWidget()
+        self.tst_box.itemDoubleClicked.connect(self.tst_edit)
+        self.tst_box.currentItemChanged.connect(self.seek)
         tst_ok = QPushButton("OK")
         tst_ok.clicked.connect(self.tst_import)
         tst_clear = QPushButton("Clear")
         tst_clear.clicked.connect(self.tst_clear)
-        tst_seek = QPushButton("Seek")
-        tst_seek.clicked.connect(self.tst_clear)
-
 
         mts_label = QLabel("Matches")
-        self.mts_box = QTextEdit()
+        self.mts_box = QListWidget()
         mts_ok = QPushButton("OK")
         mts_ok.clicked.connect(self.tst_import)
         mts_clear = QPushButton("Clear")
         mts_clear.clicked.connect(self.mts_clear)
-        mts_seek = QPushButton("Seek")
-        mts_seek.clicked.connect(self.mts_clear)
 
         export_btn = QPushButton("Export")
         export_btn.clicked.connect(self.export)
 
-        video_player = VideoPlayer()
-        video_player.show()
+        self.video_player = VideoPlayer()
+        self.video_player.show()
 
         grid = QGridLayout()
         grid.setSpacing(5)
@@ -65,47 +44,61 @@ class Dashboard(QWidget):
         grid.addWidget(tst_label,0,0)
         grid.addWidget(self.tst_box,1,0,1,3)
         grid.addWidget(tst_ok,3,2)
-        grid.addWidget(tst_seek,3,0)
         grid.addWidget(tst_clear,3,1)
 
         grid.addWidget(mts_label,5,0)
         grid.addWidget(self.mts_box,6,0,1,3)
         grid.addWidget(mts_ok,7,2)
         grid.addWidget(mts_clear,7,1)
-        grid.addWidget(mts_seek,7,0)
 
-        grid.addWidget(video_player,0,3,10,10)
+        grid.addWidget(self.video_player,0,3,10,10)
         grid.addWidget(export_btn,10,10)
 
         self.setLayout(grid)
 
+    def tst_edit(self, item):
+        newText, _ = QInputDialog.getText(self, "Edit Value","New Time", text=item.text()) 
+        if newText is not "":
+            item.setText(newText)
+        else:
+            item.setText(item.text())
+
     def tst_import(self, filename):
+        self.timelineFile = filename
         confirm = QMessageBox.question(self, "Confirm", "Use this timeline?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             with open(filename, 'r') as f:
                 for line in f.readlines():
                     timeA, timeB, playerA, playerB = line.split(';')
-                    self.tst_box.append(timeA + " --> " + timeB)
-                    self.mts_box.append(playerA + " vs " + playerB)
+                    self.tst_box.addItem(timeA + " --> " + timeB)
+                    self.mts_box.addItem(playerA + " vs " + playerB[:-1])
 
 
     def tst_clear(self):
         confirm = QMessageBox.question(self, "Clear", "Clear this input?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
-            self.tst_box.setText("")
+            self.tst_box.clear()
 
     def mts_clear(self):
         confirm = QMessageBox.question(self, "Clear", "Clear this input?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
             self.mts_box.setText("") 
 
+    def seek(self, item):
+        try: 
+            startTime = item.text().split(' ')[0]
+            hour, minute, second = startTime.split(':')
+        except Exceptiona as e:
+            print(str(e))
+            return None
+        intSeekTime = (int(hour) * 60 * 60) + (int(minute) * 60) + int(second)
+        self.video_player.setPosition(intSeekTime * 1000)
+
+
     def export(self):
         directory = str(QFileDialog.getExistingDirectory(self, "Export Location"))
-        print(directory)
-        self.pb = PB_Window() #Comment this out if you don't want to deal with a progress bar.
-        #Do the exporting
-        self.pb.bar.setValue(100)
-        self.pb.hide()
+        splice(self.timelineFile, self.video_player.vodFile, directory) 
+        
     
 
 class Meta(QMainWindow):
@@ -136,7 +129,7 @@ class Meta(QMainWindow):
 class VideoPlayer(QWidget):
     def __init__(self, parent=None):
         super(VideoPlayer, self).__init__(parent)
-
+        self.vodFile = ""
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         btnSize = QSize(16,16)
         videoWidget = QVideoWidget()
@@ -186,6 +179,7 @@ class VideoPlayer(QWidget):
 
     def open(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "", "Video Files (*.mp4, *.m4v)")
+        self.vodFile = fileName
         if fileName != '':
             self.mediaPlayer.setMedia(
                     QMediaContent(QUrl.fromLocalFile(fileName)))
