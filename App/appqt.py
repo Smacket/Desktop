@@ -35,18 +35,23 @@ class Dashboard(QWidget):
             
     def initUI(self):
         tst_label = QLabel("Timestamps")
-        tst_box = QTextEdit()
+        self.tst_box = QTextEdit()
         tst_ok = QPushButton("OK")
         tst_ok.clicked.connect(self.tst_import)
         tst_clear = QPushButton("Clear")
         tst_clear.clicked.connect(self.tst_clear)
+        tst_seek = QPushButton("Seek")
+        tst_seek.clicked.connect(self.tst_clear)
+
 
         mts_label = QLabel("Matches")
-        mts_box = QTextEdit()
+        self.mts_box = QTextEdit()
         mts_ok = QPushButton("OK")
-        mts_ok.clicked.connect(self.mts_import)
+        mts_ok.clicked.connect(self.tst_import)
         mts_clear = QPushButton("Clear")
         mts_clear.clicked.connect(self.mts_clear)
+        mts_seek = QPushButton("Seek")
+        mts_seek.clicked.connect(self.mts_clear)
 
         export_btn = QPushButton("Export")
         export_btn.clicked.connect(self.export)
@@ -58,40 +63,42 @@ class Dashboard(QWidget):
         grid.setSpacing(5)
 
         grid.addWidget(tst_label,0,0)
-        grid.addWidget(tst_box,1,0,1,3)
+        grid.addWidget(self.tst_box,1,0,1,3)
         grid.addWidget(tst_ok,3,2)
+        grid.addWidget(tst_seek,3,0)
         grid.addWidget(tst_clear,3,1)
 
         grid.addWidget(mts_label,5,0)
-        grid.addWidget(mts_box,6,0,1,3)
+        grid.addWidget(self.mts_box,6,0,1,3)
         grid.addWidget(mts_ok,7,2)
         grid.addWidget(mts_clear,7,1)
+        grid.addWidget(mts_seek,7,0)
 
-        grid.addWidget(video_player,0,3,5,5)
+        grid.addWidget(video_player,0,3,10,10)
         grid.addWidget(export_btn,10,10)
 
         self.setLayout(grid)
 
-    def tst_import(self):
+    def tst_import(self, filename):
         confirm = QMessageBox.question(self, "Confirm", "Use this timeline?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
-            print("Do the actual importing")
+            with open(filename, 'r') as f:
+                for line in f.readlines():
+                    timeA, timeB, playerA, playerB = line.split(';')
+                    self.tst_box.append(timeA + " --> " + timeB)
+                    self.mts_box.append(playerA + " vs " + playerB)
+
 
     def tst_clear(self):
         confirm = QMessageBox.question(self, "Clear", "Clear this input?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
-            print("Do the actual clearing")
-
-    def mts_import(self):
-        confirm = QMessageBox.question(self, "Confirm", "Use this match?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-        if confirm == QMessageBox.Yes:
-            print("Do the actual importing")
+            self.tst_box.setText("")
 
     def mts_clear(self):
         confirm = QMessageBox.question(self, "Clear", "Clear this input?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if confirm == QMessageBox.Yes:
-            print("Do the actual clearing")
-    
+            self.mts_box.setText("") 
+
     def export(self):
         directory = str(QFileDialog.getExistingDirectory(self, "Export Location"))
         print(directory)
@@ -112,26 +119,19 @@ class Meta(QMainWindow):
 
         import_action = QMenu("Import", self)
         import_timeline = QAction("Timeline", self)
-        import_match = QAction("Match", self)
         import_action.addAction(import_timeline)
-        import_action.addAction(import_match)
         menubar = self.menuBar()
         menu = menubar.addMenu('&File')
         menu.addMenu(import_action)
 
         import_timeline.triggered.connect(self.import_timeline_file)
-        import_match.triggered.connect(self.import_match_file)
 
         self.setGeometry(200,200,550,400)
         self.show()
 
     def import_timeline_file(self):
-        timeline_name = QFileDialog.getOpenFileName(self, 'Import file', '/home')
-        print(timeline_name)
-
-    def import_match_file(self):
-        file_name = QFileDialog.getOpenFileName(self, 'Import file', '/home')
-        print(file_name)
+        timeline_name, _ = QFileDialog.getOpenFileName(self, 'Import file', '/home')
+        self.text_edit.tst_import(timeline_name)
 
 class VideoPlayer(QWidget):
     def __init__(self, parent=None):
